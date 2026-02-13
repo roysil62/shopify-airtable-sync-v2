@@ -144,7 +144,6 @@ async function syncStatusChanges() {
       const desiredStatus = record.get('Shopify Status');
 
       if (!shopifyProductId) {
-        console.log(`⏭️  Skipped: ${productName} - No Shopify Product ID found`);
         skippedCount++;
         continue;
       }
@@ -157,18 +156,12 @@ async function syncStatusChanges() {
         shopifyStatus = 'draft';
       }
 
-      console.log(`🔄 Updating: ${productName}`);
-      console.log(`   Product ID: ${shopifyProductId}`);
-      console.log(`   New Status: ${shopifyStatus}`);
-
       const result = await updateProductStatus(accessToken, shopifyProductId, shopifyStatus);
 
       if (result.success) {
-        console.log(`   ✅ Updated successfully\n`);
         await updateAirtableStatus(base, record.id, desiredStatus);
         successCount++;
       } else {
-        console.log(`   ❌ Failed: ${result.error}\n`);
         await updateAirtableStatus(base, record.id, desiredStatus, result.error);
         errorCount++;
       }

@@ -305,17 +305,10 @@ function groupByHandle(records) {
       let publishToPos = true; // default to POS
       let publishToOnline = false;
       
-      console.log(`   🔍 DEBUG - Sales Channel field value:`, salesChannels);
-      
       if (salesChannels && Array.isArray(salesChannels)) {
-        console.log(`   🔍 DEBUG - Is array, values:`, salesChannels);
         const channelSet = new Set(salesChannels.map(c => c.toLowerCase()));
-        console.log(`   🔍 DEBUG - Lowercase set:`, Array.from(channelSet));
         publishToPos = channelSet.has('point of sale (store pos)');
         publishToOnline = channelSet.has('shopify website');
-        console.log(`   🔍 DEBUG - publishToPos:`, publishToPos, 'publishToOnline:', publishToOnline);
-      } else {
-        console.log(`   🔍 DEBUG - Not an array or empty, using defaults (POS only)`);
       }
       
       grouped[handle] = {
@@ -560,19 +553,12 @@ async function createProduct(accessToken, productData, base) {
     const data = await response.json();
 
     if (response.ok && data.product) {
-      console.log(`✅ Created: ${data.product.title} (${data.product.variants.length} variants)`);
-      
       // Publish to selected channels
       if (productData.publishToPos) {
-        console.log(`   📍 Publishing to Point of Sale...`);
         await publishToChannel(accessToken, data.product.id, 'point_of_sale');
       }
       if (productData.publishToOnline) {
-        console.log(`   🌐 Publishing to Online Store...`);
         await publishToChannel(accessToken, data.product.id, 'online_store');
-      }
-      if (!productData.publishToPos && !productData.publishToOnline) {
-        console.log(`   ℹ️  Product created as unpublished (no channels selected)`);
       }
       
       // Update all Airtable records for this product to "Live/Active"
@@ -583,7 +569,6 @@ async function createProduct(accessToken, productData, base) {
       return { success: true, product: data.product };
     } else {
       const errorMsg = JSON.stringify(data.errors || data);
-      console.error(`❌ Failed: ${productData.title} - ${errorMsg}`);
       
       // Update all Airtable records to "Error" status
       for (const recordId of productData.recordIds) {
@@ -593,7 +578,6 @@ async function createProduct(accessToken, productData, base) {
       return { success: false, error: errorMsg };
     }
   } catch (error) {
-    console.error(`❌ Failed: ${productData.title} - ${error.message}`);
     
     // Update all Airtable records to "Error" status
     for (const recordId of productData.recordIds) {
@@ -640,15 +624,11 @@ async function syncToShopify() {
         const firstVariantSKU = productData.variants[0]?.sku;
         const baseSKU = getBaseSKU(firstVariantSKU);
         
-        console.log(`\n🔍 Checking product: ${productData.title}`);
-        console.log(`   Base SKU: ${baseSKU}`);
-        
         // Check if product with matching base SKU already exists
         const skuCheck = await findProductByBaseSKU(baseSKU, accessToken);
         
         if (skuCheck.exists) {
           // Product exists - add new variants to it
-          console.log(`📝 Product already exists in Shopify - adding new variants...`);
           const existingProduct = skuCheck.product;
           const existingProductId = existingProduct.id.toString();
           
@@ -665,11 +645,9 @@ async function syncToShopify() {
               const result = await addVariantToProduct(accessToken, existingProductId, variant);
               
               if (result.success) {
-                console.log(`   ✅ Added variant: ${variant.option1} (SKU: ${variant.sku})`);
                 await updateAirtableStatus(base, recordId, 'Live/Active', existingProductId);
                 variantsAdded++;
               } else {
-                console.error(`   ❌ Failed to add variant: ${variant.option1} - ${result.error}`);
                 await updateAirtableStatus(base, recordId, 'Error', null, result.error);
                 errorCount++;
               }
@@ -677,14 +655,12 @@ async function syncToShopify() {
               await new Promise(resolve => setTimeout(resolve, 300));
             } else {
               // Variant already exists - just update status
-              console.log(`   ⏭️  Variant ${variant.option1} (SKU: ${variant.sku}) already exists`);
               await updateAirtableStatus(base, recordId, 'Live/Active', existingProductId);
               existingCount++;
             }
           }
         } else {
           // Product doesn't exist - create new one
-          console.log(`✨ Creating new product...`);
           const result = await createProduct(accessToken, productData, base);
           if (result.success) {
             newCount++;
