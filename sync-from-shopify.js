@@ -104,7 +104,8 @@ async function updateAirtable(products) {
                     'Variant ID': variant.id.toString(),
                     'Shopify Product ID': product.id.toString(),
                     'Shopify Product URL': `https://${process.env.SHOPIFY_DOMAIN}/admin/products/${product.id}`,
-                    'Shopify Inventory': inventory
+                    'Shopify Inventory': inventory,
+                    'Date Created on Shopify': product.created_at ? product.created_at.split('T')[0] : ''
                 };
 
                 if (records.length > 0) {
