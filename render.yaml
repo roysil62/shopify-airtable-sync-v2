@@ -4,7 +4,7 @@ services:
     name: airtable-to-shopify-sync
     env: node
     plan: starter
-    repo: https://github.com/YOUR_USERNAME/shopify-airtable-sync-v2
+    repo: https://github.com/roysil62/shopify-airtable-sync-v2
     branch: main
     schedule: "*/15 * * * *"
     buildCommand: npm install
@@ -28,7 +28,7 @@ services:
     name: shopify-sync-morning
     env: node
     plan: starter
-    repo: https://github.com/YOUR_USERNAME/shopify-airtable-sync-v2
+    repo: https://github.com/roysil62/shopify-airtable-sync-v2
     branch: main
     schedule: "0 15 * * *"
     buildCommand: npm install
@@ -52,7 +52,7 @@ services:
     name: shopify-sync-evening
     env: node
     plan: starter
-    repo: https://github.com/YOUR_USERNAME/shopify-airtable-sync-v2
+    repo: https://github.com/roysil62/shopify-airtable-sync-v2
     branch: main
     schedule: "0 0 * * *"
     buildCommand: npm install
