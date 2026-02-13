@@ -1,0 +1,70 @@
+services:
+  # Airtable → Shopify sync (every 15 minutes)
+  - type: cron
+    name: airtable-to-shopify-sync
+    env: node
+    plan: starter
+    repo: https://github.com/YOUR_USERNAME/shopify-airtable-sync-v2
+    branch: main
+    schedule: "*/15 * * * *"
+    buildCommand: npm install
+    startCommand: node index.js
+    envVars:
+      - key: AIRTABLE_API_KEY
+        sync: false
+      - key: AIRTABLE_BASE_ID
+        sync: false
+      - key: AIRTABLE_TABLE_NAME
+        sync: false
+      - key: CLIENT_ID
+        sync: false
+      - key: CLIENT_SECRET
+        sync: false
+      - key: SHOPIFY_DOMAIN
+        sync: false
+
+  # Shopify → Airtable sync (10:00 AM ET = 3:00 PM UTC in winter, 2:00 PM UTC in summer)
+  - type: cron
+    name: shopify-sync-morning
+    env: node
+    plan: starter
+    repo: https://github.com/YOUR_USERNAME/shopify-airtable-sync-v2
+    branch: main
+    schedule: "0 15 * * *"
+    buildCommand: npm install
+    startCommand: node sync-prod.js
+    envVars:
+      - key: AIRTABLE_API_KEY
+        sync: false
+      - key: AIRTABLE_BASE_ID
+        sync: false
+      - key: AIRTABLE_TABLE_NAME
+        sync: false
+      - key: CLIENT_ID
+        sync: false
+      - key: CLIENT_SECRET
+        sync: false
+      - key: SHOPIFY_DOMAIN
+        sync: false
+
+  # Shopify → Airtable sync (7:00 PM ET = 12:00 AM UTC next day in winter, 11:00 PM UTC in summer)
+  - type: cron
+    name: shopify-sync-evening
+    env: node
+    plan: starter
+    repo: https://github.com/YOUR_USERNAME/shopify-airtable-sync-v2
+    branch: main
+    schedule: "0 0 * * *"
+    buildCommand: npm install
+    startCommand: node sync-prod.js
+    envVars:
+      - key: AIRTABLE_API_KEY
+        sync: false
+      - key: AIRTABLE_BASE_ID
+        sync: false
+      - key: CLIENT_ID
+        sync: false
+      - key: CLIENT_SECRET
+        sync: false
+      - key: SHOPIFY_DOMAIN
+        sync: false

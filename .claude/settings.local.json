@@ -1,0 +1,10 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(gh auth status:*)",
+      "Bash(git --version:*)",
+      "Bash(git -C /Users/roysmacbookair/Desktop/shopify-airtable-sync-v2 add -A)",
+      "Bash(git -C /Users/roysmacbookair/Desktop/shopify-airtable-sync-v2 status)"
+    ]
+  }
+}

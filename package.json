@@ -1,0 +1,26 @@
+{
+  "name": "shopify-airtable-sync",
+  "version": "2.0.0",
+  "description": "Automated Shopify ↔ Airtable inventory sync with handle-based matching",
+  "main": "index.js",
+  "scripts": {
+    "sync-from-shopify": "node sync-prod.js",
+    "sync-to-shopify": "node index.js",
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "keywords": [
+    "shopify",
+    "airtable",
+    "sync",
+    "inventory"
+  ],
+  "author": "",
+  "license": "MIT",
+  "dependencies": {
+    "airtable": "^0.12.2",
+    "dotenv": "^16.3.1"
+  },
+  "engines": {
+    "node": ">=18.0.0"
+  }
+}
