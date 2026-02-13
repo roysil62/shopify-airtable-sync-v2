@@ -194,4 +194,9 @@ async function syncStatusChanges() {
   }
 }
 
-syncStatusChanges();
+// Run directly if called as main script, otherwise export
+if (require.main === module) {
+  syncStatusChanges();
+}
+
+module.exports = { syncStatusChanges };

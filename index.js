@@ -612,15 +612,15 @@ async function syncToShopify() {
     apiKey: AIRTABLE_API_KEY
   }).base(AIRTABLE_BASE_ID);
 
-  base(AIRTABLE_TABLE_NAME)
-    .select()
-    .all(async (err, records) => {
-      if (err) {
-        console.error('❌ Error fetching from Airtable:', err);
-        return;
-      }
+  let records;
+  try {
+    records = await base(AIRTABLE_TABLE_NAME).select().all();
+  } catch (err) {
+    console.error('❌ Error fetching from Airtable:', err);
+    return;
+  }
 
-      console.log(`📦 Found ${records.length} records in Airtable`);
+  console.log(`📦 Found ${records.length} records in Airtable`);
       
       const products = groupByHandle(records);
       console.log(`🎯 Found ${products.length} products with "Publish" status\n`);
@@ -707,7 +707,14 @@ async function syncToShopify() {
         console.log(`   ❌ Errors: ${errorCount}`);
       }
       console.log(`${'='.repeat(50)}\n`);
-    });
 }
 
-syncToShopify();
+// Run status updates (Archive/Draft) after publish sync
+const { syncStatusChanges } = require('./update-status');
+
+syncToShopify().then(() => {
+  // Small delay to let the publish sync finish completely
+  setTimeout(() => {
+    syncStatusChanges();
+  }, 3000);
+});
