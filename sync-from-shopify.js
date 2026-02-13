@@ -68,7 +68,12 @@ async function updateAirtable(products) {
     const base = new Airtable({ apiKey: process.env.AIRTABLE_API_KEY }).base(process.env.AIRTABLE_BASE_ID);
     const table = base(process.env.AIRTABLE_TABLE_NAME);
 
-    console.log(`📊 Processing ${products.length} products...`);
+    console.log(`📊 Processing ${products.length} products...\n`);
+
+    let updatedCount = 0;
+    let skippedCount = 0;
+    let errorCount = 0;
+    const negativeInventory = [];
 
     for (const product of products) {
         for (const variant of product.variants) {
@@ -94,29 +99,57 @@ async function updateAirtable(products) {
                     }).firstPage();
                 }
 
+                const inventory = variant.inventory_quantity || 0;
                 const fields = {
                     'Variant ID': variant.id.toString(),
                     'Shopify Product ID': product.id.toString(),
                     'Shopify Product URL': `https://${process.env.SHOPIFY_DOMAIN}/admin/products/${product.id}`,
-                    'Shopify Inventory': variant.inventory_quantity || 0
+                    'Shopify Inventory': inventory
                 };
 
                 if (records.length > 0) {
-                    // Update existing record
                     await table.update(records[0].id, fields);
-                    console.log(`✅ Updated: ${product.title} - ${variant.title} (Handle: ${product.handle})`);
+                    updatedCount++;
                 } else {
-                    // Record not found - skip it (don't create)
-                    console.log(`⏭️  Skipped: ${product.title} - ${variant.title} (not found in Airtable)`);
+                    skippedCount++;
+                }
+
+                // Track negative inventory
+                if (inventory < 0) {
+                    negativeInventory.push({
+                        title: product.title,
+                        variant: variant.title,
+                        sku: variant.sku || 'N/A',
+                        inventory: inventory
+                    });
                 }
 
             } catch (error) {
                 console.error(`❌ Error processing ${product.title} - ${variant.title}:`, error.message);
+                errorCount++;
             }
         }
     }
 
-    console.log('✅ Sync complete!');
+    console.log(`${'='.repeat(50)}`);
+    console.log(`✨ SYNC COMPLETE`);
+    console.log(`${'='.repeat(50)}`);
+    console.log(`📊 Summary:`);
+    console.log(`   ✅ Updated: ${updatedCount}`);
+    console.log(`   ⏭️  Skipped (not in Airtable): ${skippedCount}`);
+    if (errorCount > 0) {
+        console.log(`   ❌ Errors: ${errorCount}`);
+    }
+
+    if (negativeInventory.length > 0) {
+        console.log(`\n⚠️  NEGATIVE INVENTORY (${negativeInventory.length} items):`);
+        for (const item of negativeInventory) {
+            console.log(`   🔴 ${item.title} - ${item.variant} (SKU: ${item.sku}) → ${item.inventory}`);
+        }
+    } else {
+        console.log(`\n   ✅ No negative inventory found`);
+    }
+    console.log(`${'='.repeat(50)}\n`);
 }
 
 // Main sync function
