@@ -78,21 +78,9 @@ async function updateAirtable(products) {
     for (const product of products) {
         for (const variant of product.variants) {
             try {
-                // PRIORITY 1: Try to find existing record by Shopify Product ID
-                let records = await table.select({
-                    filterByFormula: `{Shopify Product ID} = "${product.id}"`
-                }).firstPage();
-
-                // PRIORITY 2: If not found, try by Handle only
-                if (records.length === 0 && product.handle) {
-                    const escapedHandle = product.handle.replace(/"/g, '\\"');
-                    records = await table.select({
-                        filterByFormula: `{Handle} = "${escapedHandle}"`
-                    }).firstPage();
-                }
-
-                // PRIORITY 3: If still not found, try by SKU
-                if (records.length === 0 && variant.sku) {
+                // Match by SKU only
+                let records = [];
+                if (variant.sku) {
                     const escapedSku = variant.sku.replace(/"/g, '\\"');
                     records = await table.select({
                         filterByFormula: `{SKU} = "${escapedSku}"`
